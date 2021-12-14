@@ -3,9 +3,9 @@
 struct GenPlugins {
     int version;                    //Out
     char* description;          //Out
-    int(*init)();                   //Out
-    void(*config)();            //Out
-    void(*quit)();               //Out
+    int (*const init)();                   //Out
+    void(*const config)();            //Out
+    void(*const quit)();               //Out
     HWND hwndParent;        //In
     HINSTANCE hDllInstance;//In
 };
