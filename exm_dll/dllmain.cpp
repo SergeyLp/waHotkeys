@@ -1,5 +1,6 @@
 #include "pch.h"
 #include <stdlib.h>
+#include "ly_wa_redefine.h"
 
 struct GenPlugins {
     int version;                    //Out
@@ -20,8 +21,7 @@ GenPlugins plugin = {
     init, config, quit,
     0, 0
 };
-
-ATOM id_play_pause;
+const HWND& waWnd = plugin.hwndParent;
 
 int media_keys[] = {
     VK_MEDIA_PLAY_PAUSE ,
@@ -31,15 +31,15 @@ int media_keys[] = {
     VK_PLAY,
 };
 
-
 void reg_keys() {
     //id_play_pause = VK_MEDIA_PLAY_PAUSE; // GlobalAddAtom(_T("VK_MEDIA_PLAY_PAUSE"));
     //const BOOL res = RegisterHotKey(plugin.hwndParent, id_play_pause, 0, VK_MEDIA_PLAY_PAUSE);
 
     for (int key : media_keys) {
-        const BOOL res = RegisterHotKey(plugin.hwndParent, key, 0, key);
+        const BOOL res = RegisterHotKey(waWnd, key, 0, key);
         if (!res) MessageBeep(MB_ICONEXCLAMATION);
     }
+
 }
 
 inline LRESULT waMessage(UINT message, WPARAM wParam = 0, LPARAM lParam = 0) {
@@ -58,23 +58,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
         case VK_MEDIA_PLAY_PAUSE:
         {
             const LRESULT status = waIPC(0, IPC_ISPLAYING);
-            if (status == 1)    // Winamp is playing
-                waMessage(WM_COMMAND, WINAMP_BUTTON3);
+            if (status == WA_PLAYING)
+                waMessage(WM_COMMAND, WA_BUT_PAUSE);
             else
-                waMessage(WM_COMMAND, WINAMP_BUTTON2);
+                waMessage(WM_COMMAND, WA_BUT_PLAY);
         }
             break;
         case VK_MEDIA_NEXT_TRACK:
-            waMessage(WM_COMMAND, WINAMP_BUTTON5);
+            waMessage(WM_COMMAND, WA_BUT_NEXT);
             break;
         case VK_MEDIA_PREV_TRACK:
-            waMessage(WM_COMMAND, WINAMP_BUTTON1);
+            waMessage(WM_COMMAND, WA_BUT_PREV);
             break;
         case VK_MEDIA_STOP:
-            waMessage(WM_COMMAND, WINAMP_BUTTON4);
+            waMessage(WM_COMMAND, WA_BUT_STOP);
             break;
         case VK_PLAY:
-            waMessage(WM_COMMAND, WINAMP_BUTTON2);
+            waMessage(WM_COMMAND, WA_BUT_PLAY);
             break;
         
         default:
@@ -114,7 +114,7 @@ void quit(){
 extern "C" {
     __declspec(dllexport) GenPlugins* winampGetGeneralPurposePlugin() {
 
-        static char desc[] = "·• Ly Ascetic Hotkeys •·";
+        static char desc[] = "Ly Ascetic Hotkeys";
         plugin.description = desc;
 
         return &plugin;

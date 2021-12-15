@@ -110,6 +110,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ly_wa_redefine.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
