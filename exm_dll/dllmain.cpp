@@ -50,12 +50,12 @@ void reg_keys() {
     }
 
     BOOL res;
-    res = RegisterHotKey(waWnd, idPlayPause, MOD_WIN, VK_F2);
-    res &= RegisterHotKey(waWnd, idStop, MOD_WIN| MOD_SHIFT, VK_F2);
-    res &= RegisterHotKey(waWnd, idNext, MOD_WIN, VK_F4);
-    res &= RegisterHotKey(waWnd, idPrev, MOD_WIN| MOD_SHIFT, VK_F4);
-    res &= RegisterHotKey(waWnd, idInfo, MOD_WIN, VK_F3);
-    res &= RegisterHotKey(waWnd, idDelete, MOD_WIN, VK_OEM_3);  //`~
+    res = RegisterHotKey(waWnd, idPlayPause, MOD_WIN | MOD_NOREPEAT, VK_F2);
+    res &= RegisterHotKey(waWnd, idStop, MOD_WIN| MOD_SHIFT | MOD_NOREPEAT, VK_F2);
+    res &= RegisterHotKey(waWnd, idNext, MOD_WIN | MOD_NOREPEAT, VK_F4);
+    res &= RegisterHotKey(waWnd, idPrev, MOD_WIN| MOD_SHIFT | MOD_NOREPEAT, VK_F4);
+    res &= RegisterHotKey(waWnd, idInfo, MOD_WIN | MOD_NOREPEAT, VK_F3);
+    res &= RegisterHotKey(waWnd, idDelete, MOD_WIN | MOD_NOREPEAT, VK_OEM_3);  //`~
     if (!res) MessageBeep(MB_ICONWARNING);
 
 }
@@ -102,6 +102,38 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
             waMessage(WM_SYSCOMMAND, SC_RESTORE);
             waMessage(WM_COMMAND, WA_SHOW_FILE_INFO_DLG/*, IPC_CB_ONSHOWWND*/);
             break;
+        case idDelete:
+        {
+            const int position = waIPC(0, IPC_GETLISTPOS);
+            const LRESULT file_path = waIPC(position, IPC_GETPLAYLISTFILE);
+            if (file_path != NULL) {
+                const HWND hPeWnd = (HWND)waIPC(IPC_GETWND_PE, IPC_GETWND);
+                SendMessage(hPeWnd, WM_WA_IPC, IPC_PE_DELETEINDEX, (LPARAM)position);              
+                
+                waMessage(WM_COMMAND, WA_BUTTON_NEXT);
+
+                char path_with_00[MAX_PATH + 1];    // Add another one for SH
+                char* out_p = path_with_00;
+                const char* in_p = (const char*) file_path;
+                for (*out_p = *in_p; *in_p != '\0' && ((int)in_p - (int)file_path) < MAX_PATH;) {
+                    *(++out_p) = *(++in_p);
+                }
+                *out_p = '\0';   //terminating '\0'
+                *(++out_p) = '\0';   // Add another one for SHFileOperationA
+
+                //waMessage(WM_SYSCOMMAND, SC_RESTORE);
+                //MessageBoxA(waWnd, (LPCSTR)path_with_00, "DELETE This file", MB_OK | MB_ICONSTOP);
+                SHFILEOPSTRUCTA file_op;
+                file_op.pFrom = path_with_00;
+                file_op.hwnd = waWnd;
+                file_op.wFunc = FO_DELETE;
+                file_op.fFlags = FOF_ALLOWUNDO | FOF_FILESONLY | FOF_NO_CONNECTED_ELEMENTS;
+                file_op.pTo = NULL;
+                SHFileOperationA(&file_op);
+            }           
+        }
+            break;
+
         
         default:
             MessageBeep(MB_ICONINFORMATION);

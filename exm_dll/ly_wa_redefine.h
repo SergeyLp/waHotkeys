@@ -8,4 +8,4 @@
 
 #define WA_PLAYING   1
 #define WA_SHOW_FILE_INFO_DLG   40188
-
+#define IPC_PE_DELETEINDEX        104
