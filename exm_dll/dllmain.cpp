@@ -31,10 +31,6 @@ int media_keys[] = {
     VK_PLAY,
 };
 
-//LPARAM commands_table[] = {
-//    0,
-//
-//};
 
 void reg_keys() {
     //id_play_pause = VK_MEDIA_PLAY_PAUSE; // GlobalAddAtom(_T("VK_MEDIA_PLAY_PAUSE"));
@@ -54,50 +50,43 @@ inline LRESULT waIPC(WPARAM wParam, LPARAM lParam = 0) {
     return waMessage(WM_WA_IPC, wParam, lParam);
 }
 
-//LRESULT get_command_by_hotkey(WORD hot_key) {
-//    LRESULT i;
-//    for (i = 1; i < _countof(media_keys); i++) {
-//        if (media_keys[i] == hot_key) {
-//
-//        }
-//    }
-//
-//}
-
-WNDPROC lpWndProcOld;
+WNDPROC pWndProcOld;
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
     if (message == WM_HOTKEY) {
         const WORD hotkey = LOWORD(wParam);
-        if (hotkey == VK_MEDIA_PLAY_PAUSE) {
+        switch (hotkey) {
+        case VK_MEDIA_PLAY_PAUSE:
+        {
             const LRESULT status = waIPC(0, IPC_ISPLAYING);
             if (status == 1)    // Winamp is playing
                 waMessage(WM_COMMAND, WINAMP_BUTTON3);
-            else 
+            else
                 waMessage(WM_COMMAND, WINAMP_BUTTON2);
-        } else {
-            switch (hotkey) {
-                case VK_MEDIA_NEXT_TRACK:
-                    waMessage(WM_COMMAND, WINAMP_BUTTON5);
-                    break;
-                case VK_MEDIA_PREV_TRACK:
-                    waMessage(WM_COMMAND, WINAMP_BUTTON1);
-                    break;
-                case VK_MEDIA_STOP:
-                    waMessage(WM_COMMAND, WINAMP_BUTTON4);
-                    break;
-                case VK_PLAY:
-                    waMessage(WM_COMMAND, WINAMP_BUTTON2);
-                    break;
-        
-            default:
-                break;
-            }
         }
-
-        return FALSE;
+            break;
+        case VK_MEDIA_NEXT_TRACK:
+            waMessage(WM_COMMAND, WINAMP_BUTTON5);
+            break;
+        case VK_MEDIA_PREV_TRACK:
+            waMessage(WM_COMMAND, WINAMP_BUTTON1);
+            break;
+        case VK_MEDIA_STOP:
+            waMessage(WM_COMMAND, WINAMP_BUTTON4);
+            break;
+        case VK_PLAY:
+            waMessage(WM_COMMAND, WINAMP_BUTTON2);
+            break;
+        
+        default:
+            return FALSE;
+            break;
+        }
+        return TRUE;
     }
-
-    return CallWindowProc(lpWndProcOld, hwnd, message, wParam, lParam);
+    else {
+        return CallWindowProc(pWndProcOld, hwnd, message, wParam, lParam);
+    }
+    
 }
 
 
@@ -106,7 +95,7 @@ int init() {
     MessageBeep(0xFFFFFFFF);
     #endif // _DEBUG
 
-    lpWndProcOld = (WNDPROC)GetWindowLong(plugin.hwndParent, GWL_WNDPROC);
+    pWndProcOld = (WNDPROC)GetWindowLong(plugin.hwndParent, GWL_WNDPROC);
     SetWindowLong(plugin.hwndParent, GWL_WNDPROC, (long)WndProc);
 
     reg_keys();
