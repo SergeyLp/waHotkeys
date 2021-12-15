@@ -31,14 +31,32 @@ int media_keys[] = {
     VK_PLAY,
 };
 
+enum KeysWithWinlogoButtons {
+    idPlayPause = 0xE000,
+    idStop,
+    idNext,
+    idPrev,
+    idInfo,
+    idDelete,
+};
+
 void reg_keys() {
     //id_play_pause = VK_MEDIA_PLAY_PAUSE; // GlobalAddAtom(_T("VK_MEDIA_PLAY_PAUSE"));
     //const BOOL res = RegisterHotKey(plugin.hwndParent, id_play_pause, 0, VK_MEDIA_PLAY_PAUSE);
 
     for (int key : media_keys) {
         const BOOL res = RegisterHotKey(waWnd, key, 0, key);
-        if (!res) MessageBeep(MB_ICONEXCLAMATION);
+        if (!res) MessageBeep(MB_ICONWARNING);
     }
+
+    BOOL res;
+    res = RegisterHotKey(waWnd, idPlayPause, MOD_WIN, VK_F2);
+    res &= RegisterHotKey(waWnd, idStop, MOD_WIN| MOD_SHIFT, VK_F2);
+    res &= RegisterHotKey(waWnd, idNext, MOD_WIN, VK_F4);
+    res &= RegisterHotKey(waWnd, idPrev, MOD_WIN| MOD_SHIFT, VK_F4);
+    res &= RegisterHotKey(waWnd, idInfo, MOD_WIN, VK_F3);
+    res &= RegisterHotKey(waWnd, idDelete, MOD_WIN, VK_OEM_3);  //`~
+    if (!res) MessageBeep(MB_ICONWARNING);
 
 }
 
@@ -56,36 +74,44 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
         const WORD hotkey = LOWORD(wParam);
         switch (hotkey) {
         case VK_MEDIA_PLAY_PAUSE:
+        case idPlayPause:
         {
             const LRESULT status = waIPC(0, IPC_ISPLAYING);
             if (status == WA_PLAYING)
-                waMessage(WM_COMMAND, WA_BUT_PAUSE);
+                waMessage(WM_COMMAND, WA_BUTTON_PAUSE);
             else
-                waMessage(WM_COMMAND, WA_BUT_PLAY);
+                waMessage(WM_COMMAND, WA_BUTTON_PLAY);
         }
             break;
+        case idNext:
         case VK_MEDIA_NEXT_TRACK:
-            waMessage(WM_COMMAND, WA_BUT_NEXT);
+            waMessage(WM_COMMAND, WA_BUTTON_NEXT);
             break;
+        case idPrev:
         case VK_MEDIA_PREV_TRACK:
-            waMessage(WM_COMMAND, WA_BUT_PREV);
+            waMessage(WM_COMMAND, WA_BUTTON_PREV);
             break;
+        case idStop:
         case VK_MEDIA_STOP:
-            waMessage(WM_COMMAND, WA_BUT_STOP);
+            waMessage(WM_COMMAND, WA_BUTTON_STOP);
             break;
         case VK_PLAY:
-            waMessage(WM_COMMAND, WA_BUT_PLAY);
+            waMessage(WM_COMMAND, WA_BUTTON_PLAY);
+            break;
+        case idInfo:
+            waMessage(WM_SYSCOMMAND, SC_RESTORE);
+            waMessage(WM_COMMAND, WA_SHOW_FILE_INFO_DLG/*, IPC_CB_ONSHOWWND*/);
             break;
         
         default:
+            MessageBeep(MB_ICONINFORMATION);
             return FALSE;
             break;
         }
         return TRUE;
     }
-    else {
+    else
         return CallWindowProc(pWndProcOld, hwnd, message, wParam, lParam);
-    }
     
 }
 
@@ -95,20 +121,20 @@ int init() {
     MessageBeep(0xFFFFFFFF);
     #endif // _DEBUG
 
-    pWndProcOld = (WNDPROC)GetWindowLong(plugin.hwndParent, GWL_WNDPROC);
-    SetWindowLong(plugin.hwndParent, GWL_WNDPROC, (long)WndProc);
+    pWndProcOld = (WNDPROC)GetWindowLong(waWnd, GWL_WNDPROC);
+    SetWindowLong(waWnd, GWL_WNDPROC, (long)WndProc);
 
     reg_keys();
     return 0;
 }
 
 void config(){
-    MessageBox(plugin.hwndParent, _T("TODO: Keys reload"), _T("Hot keys plugin"), MB_OK | MB_ICONINFORMATION);
+    MessageBox(plugin.hwndParent, _T("Keys reload"), _T("Hot keys plugin"), MB_OK | MB_ICONINFORMATION);
     reg_keys();
 }
 
 void quit(){
-    //const BOOL res = UnregisterHotKey(plugin.hwndParent, id_play_pause);
+    //No need call UnregisterHotKey: hwndParent already not exist.
 }
 
 extern "C" {
