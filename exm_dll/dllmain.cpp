@@ -99,8 +99,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
             waMessage(WM_COMMAND, WA_BUTTON_PLAY);
             break;
         case idInfo:
-            waMessage(WM_SYSCOMMAND, SC_RESTORE);
-            waMessage(WM_COMMAND, WA_SHOW_FILE_INFO_DLG/*, IPC_CB_ONSHOWWND*/);
+            waMessage(WM_COMMAND, WA_SHOW_FILE_INFO_DLG);
             break;
         case idDelete:
         {
@@ -121,8 +120,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 *out_p = '\0';   //terminating '\0'
                 *(++out_p) = '\0';   // Add another one for SHFileOperationA
 
-                //waMessage(WM_SYSCOMMAND, SC_RESTORE);
-                //MessageBoxA(waWnd, (LPCSTR)path_with_00, "DELETE This file", MB_OK | MB_ICONSTOP);
                 SHFILEOPSTRUCTA file_op;
                 file_op.pFrom = path_with_00;
                 file_op.hwnd = waWnd;
