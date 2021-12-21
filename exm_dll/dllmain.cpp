@@ -50,14 +50,13 @@ void reg_keys() {
     }
 
     BOOL res;
-    res = RegisterHotKey(waWnd, idPlayPause, MOD_WIN | MOD_NOREPEAT, VK_F2);
-    res &= RegisterHotKey(waWnd, idStop, MOD_WIN| MOD_SHIFT | MOD_NOREPEAT, VK_F2);
-    res &= RegisterHotKey(waWnd, idNext, MOD_WIN | MOD_NOREPEAT, VK_F4);
-    res &= RegisterHotKey(waWnd, idPrev, MOD_WIN| MOD_SHIFT | MOD_NOREPEAT, VK_F4);
-    res &= RegisterHotKey(waWnd, idInfo, MOD_WIN | MOD_NOREPEAT, VK_F3);
+    res = RegisterHotKey(waWnd, idInfo, MOD_WIN | MOD_NOREPEAT, VK_F3);
+    res &= RegisterHotKey(waWnd, idPrev, MOD_WIN | MOD_NOREPEAT, VK_F5);
+    res &= RegisterHotKey(waWnd, idPlayPause, MOD_WIN | MOD_NOREPEAT, VK_F6);
+    res &= RegisterHotKey(waWnd, idStop, MOD_WIN | MOD_NOREPEAT, VK_F7);
+    res &= RegisterHotKey(waWnd, idNext, MOD_WIN | MOD_NOREPEAT, VK_F8);
     res &= RegisterHotKey(waWnd, idDelete, MOD_WIN | MOD_NOREPEAT, VK_OEM_3);  //`~
     if (!res) MessageBeep(MB_ICONWARNING);
-
 }
 
 inline LRESULT waMessage(UINT message, WPARAM wParam = 0, LPARAM lParam = 0) {
@@ -66,6 +65,12 @@ inline LRESULT waMessage(UINT message, WPARAM wParam = 0, LPARAM lParam = 0) {
 
 inline LRESULT waIPC(WPARAM wParam, LPARAM lParam = 0) {
     return waMessage(WM_WA_IPC, wParam, lParam);
+}
+
+inline void waForcePlay(){
+    const LRESULT status = waIPC(0, IPC_ISPLAYING);
+    if (status != WA_PLAYING)
+        waMessage(WM_COMMAND, WA_BUTTON_PLAY);
 }
 
 WNDPROC pWndProcOld;
@@ -86,10 +91,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
         case idNext:
         case VK_MEDIA_NEXT_TRACK:
             waMessage(WM_COMMAND, WA_BUTTON_NEXT);
+            waForcePlay();
             break;
         case idPrev:
         case VK_MEDIA_PREV_TRACK:
             waMessage(WM_COMMAND, WA_BUTTON_PREV);
+            waForcePlay();
             break;
         case idStop:
         case VK_MEDIA_STOP:
@@ -129,9 +136,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
                 SHFileOperationA(&file_op);
             }           
         }
-            break;
+        break;
 
-        
         default:
             MessageBeep(MB_ICONINFORMATION);
             return FALSE;
