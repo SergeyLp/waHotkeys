@@ -3,7 +3,7 @@ This austere plugin is used to control Winamp with multimedia buttons and predef
 
 Action|Media key|With win keys
 ------|:-------:|------------|
-Play/Pause|►⎸|Win+F2
+Play/Pause|►⎸⎸|Win+F2
 Stop|▮|Win+Shift+F2
 Play next|►►⎸|Win+F4
 Play previous|⎸◄◄|Win+Shift+F4
