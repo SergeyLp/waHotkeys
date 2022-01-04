@@ -50,11 +50,11 @@ void reg_keys() {
     }
 
     BOOL res;
-    res = RegisterHotKey(waWnd, idInfo, MOD_WIN | MOD_NOREPEAT, VK_F3);
-    res &= RegisterHotKey(waWnd, idPrev, MOD_WIN | MOD_NOREPEAT, VK_F5);
-    res &= RegisterHotKey(waWnd, idPlayPause, MOD_WIN | MOD_NOREPEAT, VK_F6);
-    res &= RegisterHotKey(waWnd, idStop, MOD_WIN | MOD_NOREPEAT, VK_F7);
-    res &= RegisterHotKey(waWnd, idNext, MOD_WIN | MOD_NOREPEAT, VK_F8);
+    res = RegisterHotKey(waWnd, idPlayPause, MOD_WIN | MOD_NOREPEAT, VK_F2);
+    res &= RegisterHotKey(waWnd, idStop, MOD_WIN | MOD_SHIFT | MOD_NOREPEAT, VK_F2);
+    res &= RegisterHotKey(waWnd, idNext, MOD_WIN | MOD_NOREPEAT, VK_F4);
+    res &= RegisterHotKey(waWnd, idPrev, MOD_WIN | MOD_SHIFT | MOD_NOREPEAT, VK_F4);
+    res &= RegisterHotKey(waWnd, idInfo, MOD_WIN | MOD_NOREPEAT, VK_F3);
     res &= RegisterHotKey(waWnd, idDelete, MOD_WIN | MOD_NOREPEAT, VK_OEM_3);  //`~
     if (!res) MessageBeep(MB_ICONWARNING);
 }
@@ -106,7 +106,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) 
             waMessage(WM_COMMAND, WA_BUTTON_PLAY);
             break;
         case idInfo:
-            waMessage(WM_COMMAND, WA_SHOW_FILE_INFO_DLG);
+            waMessage(WM_SYSCOMMAND, SC_RESTORE);
+            waMessage(WM_COMMAND, WA_SHOW_FILE_INFO_DLG/*, IPC_CB_ONSHOWWND*/);
             break;
         case idDelete:
         {
